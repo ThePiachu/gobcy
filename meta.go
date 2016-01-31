@@ -1,6 +1,7 @@
 package gobcy
 
 import (
+	"appengine"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -17,14 +18,14 @@ import (
 //If private is false, will retrieve publicly stored metadata.
 //If private is true, will retrieve privately stored metadata
 //associated with your token.
-func (api *API) GetMeta(hash string, kind string, private bool) (meta map[string]string, err error) {
+func (api *API) GetMeta(c appengine.Context, hash string, kind string, private bool) (meta map[string]string, err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func GetMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return
 	}
 	params := map[string]string{"private": strconv.FormatBool(private)}
 	u, err := api.buildURLParams("/"+kind+"s/"+hash+"/meta", params)
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
@@ -44,7 +45,7 @@ func (api *API) GetMeta(hash string, kind string, private bool) (meta map[string
 //If private is false, will set publicly stored metadata.
 //If private is true, will set privately stored metadata
 //associated with your token.
-func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]string) (err error) {
+func (api *API) PutMeta(c appengine.Context, hash string, kind string, private bool, meta map[string]string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func PutMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return
@@ -59,7 +60,7 @@ func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]
 	if err = enc.Encode(&meta); err != nil {
 		return
 	}
-	resp, err := putResponse(u, &data)
+	resp, err := putResponse(c, u, &data)
 	if err != nil {
 		return
 	}
@@ -74,13 +75,13 @@ func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]
 //  "tx" (for a transaction)
 //  "block" (for a block)
 //Public metadata cannot be deleted; it is immutable.
-func (api *API) DeleteMeta(hash string, kind string) (err error) {
+func (api *API) DeleteMeta(c appengine.Context, hash string, kind string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func DeleteMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return
 	}
 	u, err := api.buildURL("/" + kind + "s/" + hash + "/meta")
-	resp, err := deleteResponse(u)
+	resp, err := deleteResponse(c, u)
 	if err != nil {
 		return
 	}

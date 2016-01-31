@@ -1,6 +1,7 @@
 package gobcy
 
 import (
+	"appengine"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -10,8 +11,8 @@ import (
 //GetAddrBal returns balance information for a given public
 //address. Fastest Address API call, but does not
 //include transaction details.
-func (api *API) GetAddrBal(hash string) (addr Addr, err error) {
-	addr, err = api.GetAddrBalCustom(hash, false)
+func (api *API) GetAddrBal(c appengine.Context, hash string) (addr Addr, err error) {
+	addr, err = api.GetAddrBalCustom(c, hash, false)
 	return
 }
 
@@ -22,10 +23,10 @@ func (api *API) GetAddrBal(hash string) (addr Addr, err error) {
 //  "omitWalletAddr," if true will omit wallet addresses if
 //  you're querying a wallet instead of an address. Useful to
 //  speed up the API call for larger wallets.
-func (api *API) GetAddrBalCustom(hash string, omitWalletAddr bool) (addr Addr, err error) {
+func (api *API) GetAddrBalCustom(c appengine.Context, hash string, omitWalletAddr bool) (addr Addr, err error) {
 	params := map[string]string{"omitWalletAddresses": strconv.FormatBool(omitWalletAddr)}
 	u, err := api.buildURLParams("/addrs/"+hash+"/balance", params)
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
@@ -41,21 +42,21 @@ func (api *API) GetAddrBalCustom(hash string, omitWalletAddr bool) (addr Addr, e
 //transaction outpus via the TXRef arrays in the Address
 //type. Returns more information than GetAddrBal, but
 //slightly slower.
-func (api *API) GetAddr(hash string) (addr Addr, err error) {
-	addr, err = api.GetAddrCustom(hash, false, 0, 0, 0, 0, false, false)
+func (api *API) GetAddr(c appengine.Context, hash string) (addr Addr, err error) {
+	addr, err = api.GetAddrCustom(c, hash, false, 0, 0, 0, 0, false, false)
 	return
 }
 
 //GetAddrNext returns a given Addr's next page of TXRefs,
 //if Addr.HasMore is true. If HasMore is false, will
 //return an error. It assumes default API flags, like GetAddr.
-func (api *API) GetAddrNext(this Addr) (next Addr, err error) {
+func (api *API) GetAddrNext(c appengine.Context, this Addr) (next Addr, err error) {
 	if !this.HasMore {
 		err = errors.New("Func GetAddrNext: this Addr doesn't have more TXRefs according to its HasMore")
 		return
 	}
 	before := this.TXRefs[len(this.TXRefs)-1].BlockHeight
-	next, err = api.GetAddrCustom(this.Address, false, 0, before, 0, 0, false, false)
+	next, err = api.GetAddrCustom(c, this.Address, false, 0, before, 0, 0, false, false)
 	return
 }
 
@@ -82,7 +83,7 @@ func (api *API) GetAddrNext(this Addr) (next Addr, err error) {
 //  speed up the API call for larger wallets.
 //	"includeConfidence," if true, includes confidence information
 //	for unconfirmed transactions.
-func (api *API) GetAddrCustom(hash string, unspent bool, confirms int, before int,
+func (api *API) GetAddrCustom(c appengine.Context, hash string, unspent bool, confirms int, before int,
 	after int, limit int, omitWalletAddr bool, includeConfidence bool) (addr Addr, err error) {
 	params := map[string]string{"unspentOnly": strconv.FormatBool(unspent), "omitWalletAddresses": strconv.FormatBool(omitWalletAddr), "includeConfidence": strconv.FormatBool(includeConfidence)}
 	if confirms > 0 {
@@ -98,7 +99,7 @@ func (api *API) GetAddrCustom(hash string, unspent bool, confirms int, before in
 		params["limit"] = strconv.Itoa(limit)
 	}
 	u, err := api.buildURLParams("/addrs/"+hash, params)
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
@@ -113,21 +114,21 @@ func (api *API) GetAddrCustom(hash string, unspent bool, confirms int, before in
 //address, including a slice of TXs associated
 //with this address. Returns more data than GetAddr since
 //it includes full transactions, but slowest Address query.
-func (api *API) GetAddrFull(hash string) (addr Addr, err error) {
-	addr, err = api.GetAddrFullCustom(hash, false, 0, 0, 0, 0, false, false)
+func (api *API) GetAddrFull(c appengine.Context, hash string) (addr Addr, err error) {
+	addr, err = api.GetAddrFullCustom(c, hash, false, 0, 0, 0, 0, false, false)
 	return
 }
 
 //GetAddrFullNext returns a given Addr's next page of TXs,
 //if Addr.HasMore is true. If HasMore is false, will
 //return an error. It assumes default API flags, like GetAddrFull.
-func (api *API) GetAddrFullNext(this Addr) (next Addr, err error) {
+func (api *API) GetAddrFullNext(c appengine.Context, this Addr) (next Addr, err error) {
 	if !this.HasMore {
 		err = errors.New("Func GetAddrFullNext: this Addr doesn't have more TXs according to its HasMore")
 		return
 	}
 	before := this.TXs[len(this.TXs)-1].BlockHeight
-	next, err = api.GetAddrFullCustom(this.Address, false, 0, 0, before, 0, false, false)
+	next, err = api.GetAddrFullCustom(c, this.Address, false, 0, 0, before, 0, false, false)
 	return
 }
 
@@ -155,7 +156,7 @@ func (api *API) GetAddrFullNext(this Addr) (next Addr, err error) {
 //  speed up the API call for larger wallets.
 //	"includeConfidence," if true, includes confidence information
 //	for unconfirmed transactions.
-func (api *API) GetAddrFullCustom(hash string, hex bool, confirms int, before int, after int,
+func (api *API) GetAddrFullCustom(c appengine.Context, hash string, hex bool, confirms int, before int, after int,
 	limit int, omitWalletAddr bool, includeConfidence bool) (addr Addr, err error) {
 	params := map[string]string{"includeHex": strconv.FormatBool(hex), "omitWalletAddresses": strconv.FormatBool(omitWalletAddr), "includeConfidence": strconv.FormatBool(includeConfidence)}
 	if confirms > 0 {
@@ -171,7 +172,7 @@ func (api *API) GetAddrFullCustom(hash string, hex bool, confirms int, before in
 		params["limit"] = strconv.Itoa(limit)
 	}
 	u, err := api.buildURLParams("/addrs/"+hash+"/full", params)
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
@@ -186,9 +187,9 @@ func (api *API) GetAddrFullCustom(hash string, hex bool, confirms int, before in
 //transactions within the specified coin/chain. Please note that
 //this call must be made over SSL, and it is not recommended to keep
 //large amounts in these addresses, or for very long.
-func (api *API) GenAddrKeychain() (pair AddrKeychain, err error) {
+func (api *API) GenAddrKeychain(c appengine.Context) (pair AddrKeychain, err error) {
 	u, err := api.buildURL("/addrs")
-	resp, err := postResponse(u, nil)
+	resp, err := postResponse(c, u, nil)
 	if err != nil {
 		return
 	}
@@ -204,7 +205,7 @@ func (api *API) GenAddrKeychain() (pair AddrKeychain, err error) {
 //ignored, and the ScriptType must be a "multisig-n-of-m" type. Returns
 //an AddrKeychain with the same PubKeys, ScriptType, and the proper
 //P2SH address in the AddrKeychain's address field.
-func (api *API) GenAddrMultisig(multi AddrKeychain) (addr AddrKeychain, err error) {
+func (api *API) GenAddrMultisig(c appengine.Context, multi AddrKeychain) (addr AddrKeychain, err error) {
 	if len(multi.PubKeys) == 0 || multi.ScriptType == "" {
 		err = errors.New("GenAddrMultisig: PubKeys or ScriptType are empty.")
 		return
@@ -218,7 +219,7 @@ func (api *API) GenAddrMultisig(multi AddrKeychain) (addr AddrKeychain, err erro
 	if err = enc.Encode(&multi); err != nil {
 		return
 	}
-	resp, err := postResponse(u, &data)
+	resp, err := postResponse(c, u, &data)
 	if err != nil {
 		return
 	}
@@ -231,7 +232,7 @@ func (api *API) GenAddrMultisig(multi AddrKeychain) (addr AddrKeychain, err erro
 //Faucet funds the AddrKeychain with an amount. Only works on BlockCypher's
 //Testnet and Bitcoin Testnet3. Returns the transaction hash funding
 //your AddrKeychain.
-func (api *API) Faucet(a AddrKeychain, amount int) (txhash string, err error) {
+func (api *API) Faucet(c appengine.Context, a AddrKeychain, amount int) (txhash string, err error) {
 	if !(api.Coin == "bcy" && api.Chain == "test") && !(api.Coin == "btc" && api.Chain == "test3") {
 		err = errors.New("Faucet: Cannot use Faucet unless on BlockCypher Testnet or Bitcoin Testnet3.")
 		return
@@ -260,7 +261,7 @@ func (api *API) Faucet(a AddrKeychain, amount int) (txhash string, err error) {
 	if err = enc.Encode(&FauxAddr{addr, amount}); err != nil {
 		return
 	}
-	resp, err := postResponse(u, &data)
+	resp, err := postResponse(c, u, &data)
 	if err != nil {
 		return
 	}

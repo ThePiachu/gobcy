@@ -11,6 +11,8 @@
 package gobcy
 
 import (
+	"appengine"
+	"appengine/urlfetch"
 	"encoding/json"
 	"errors"
 	"io"
@@ -35,8 +37,10 @@ type API struct {
 }
 
 //getResponse is a boilerplate for HTTP GET responses.
-func getResponse(target *url.URL) (resp *http.Response, err error) {
-	resp, err = http.Get(target.String())
+func getResponse(c appengine.Context, target *url.URL) (resp *http.Response, err error) {
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err = client.Get(target.String())
 	if err != nil {
 		return
 	}
@@ -51,8 +55,10 @@ func getResponse(target *url.URL) (resp *http.Response, err error) {
 }
 
 //postResponse is a boilerplate for HTTP POST responses.
-func postResponse(target *url.URL, data io.Reader) (resp *http.Response, err error) {
-	resp, err = http.Post(target.String(), "application/json", data)
+func postResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err = client.Post(target.String(), "application/json", data)
 	if err != nil {
 		return
 	}
@@ -67,12 +73,14 @@ func postResponse(target *url.URL, data io.Reader) (resp *http.Response, err err
 }
 
 //putResponse is a boilerplate for HTTP PUT responses.
-func putResponse(target *url.URL, data io.Reader) (resp *http.Response, err error) {
+func putResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
 	req, err := http.NewRequest("PUT", target.String(), data)
 	if err != nil {
 		return
 	}
-	resp, err = http.DefaultClient.Do(req)
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err = client.Do(req)
 	if err != nil {
 		return
 	}
@@ -87,12 +95,14 @@ func putResponse(target *url.URL, data io.Reader) (resp *http.Response, err erro
 }
 
 //deleteResponse is a boilerplate for HTTP DELETE responses.
-func deleteResponse(target *url.URL) (resp *http.Response, err error) {
+func deleteResponse(c appengine.Context, target *url.URL) (resp *http.Response, err error) {
 	req, err := http.NewRequest("DELETE", target.String(), nil)
 	if err != nil {
 		return
 	}
-	resp, err = http.DefaultClient.Do(req)
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err = client.Do(req)
 	if err != nil {
 		return
 	}

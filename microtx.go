@@ -1,6 +1,7 @@
 package gobcy
 
 import (
+	"appengine"
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
@@ -16,7 +17,7 @@ import (
 //(using the *Micro.Sign method) and run SendMicro
 //again with the signed data, which will then return
 //a proper hash.
-func (api *API) SendMicro(mic MicroTX) (result MicroTX, err error) {
+func (api *API) SendMicro(c appengine.Context, mic MicroTX) (result MicroTX, err error) {
 	u, err := api.buildURL("/txs/micro")
 	if err != nil {
 		return
@@ -26,7 +27,7 @@ func (api *API) SendMicro(mic MicroTX) (result MicroTX, err error) {
 	if err = enc.Encode(&mic); err != nil {
 		return
 	}
-	resp, err := postResponse(u, &data)
+	resp, err := postResponse(c, u, &data)
 	if err != nil {
 		return
 	}

@@ -1,6 +1,7 @@
 package gobcy
 
 import (
+	"appengine"
 	"encoding/json"
 	"errors"
 	"net/url"
@@ -9,9 +10,9 @@ import (
 
 //GetChain returns the current state of the
 //configured Coin/Chain.
-func (api *API) GetChain() (chain Blockchain, err error) {
+func (api *API) GetChain(c appengine.Context) (chain Blockchain, err error) {
 	u, err := api.buildURL("")
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
@@ -25,15 +26,15 @@ func (api *API) GetChain() (chain Blockchain, err error) {
 //GetBlock returns a Block based on either height
 //or hash. If both height and hash are sent, it will
 //throw an error.
-func (api *API) GetBlock(height int, hash string) (block Block, err error) {
-	block, err = api.GetBlockPage(height, hash, 0, 0)
+func (api *API) GetBlock(c appengine.Context, height int, hash string) (block Block, err error) {
+	block, err = api.GetBlockPage(c, height, hash, 0, 0)
 	return
 }
 
 //GetBlockNextTXs returns the the next page of TXids based
 //on the NextTXs URL in this Block. If NextTXs is empty,
 //this will return an error.
-func (api *API) GetBlockNextTXs(this Block) (next Block, err error) {
+func (api *API) GetBlockNextTXs(c appengine.Context, this Block) (next Block, err error) {
 	if this.NextTXs == "" {
 		err = errors.New("Func GetNextTXs: This Block doesn't have more transactions")
 		return
@@ -52,7 +53,7 @@ func (api *API) GetBlockNextTXs(this Block) (next Block, err error) {
 	if err != nil {
 		return
 	}
-	next, err = api.GetBlockPage(0, this.Hash, txstart, limit)
+	next, err = api.GetBlockPage(c, 0, this.Hash, txstart, limit)
 	return
 }
 
@@ -60,7 +61,7 @@ func (api *API) GetBlockNextTXs(this Block) (next Block, err error) {
 //or hash, and includes custom variables for txstart/limit of txs.
 //If both height and hash are sent, it will throw an error. If txstart/limit = 0,
 //it will use the API-defaults for both.
-func (api *API) GetBlockPage(height int, hash string, txstart int, limit int) (block Block, err error) {
+func (api *API) GetBlockPage(c appengine.Context, height int, hash string, txstart int, limit int) (block Block, err error) {
 	var u *url.URL
 	ustr := "/blocks/"
 	if height != 0 && hash != "" {
@@ -80,7 +81,7 @@ func (api *API) GetBlockPage(height int, hash string, txstart int, limit int) (b
 		}
 		u, err = api.buildURLParams(ustr, params)
 	}
-	resp, err := getResponse(u)
+	resp, err := getResponse(c, u)
 	if err != nil {
 		return
 	}
