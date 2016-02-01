@@ -8,6 +8,37 @@ import (
 	"strconv"
 )
 
+
+func (api *API) GetMultiAddrBal(c appengine.Context, hashes []string) (addr []Addr, err error) {
+	addr, err = api.GetMultiAddrBalCustom(c, hashes, false)
+	return
+}
+
+func (api *API) GetMultiAddrBalCustom(c appengine.Context, hashes []string, omitWalletAddr bool) (addr []Addr, err error) {
+	if len(hashes)==0 {
+		return
+	}
+	params := map[string]string{"omitWalletAddresses": strconv.FormatBool(omitWalletAddr)}
+	hash:=""
+	for i, v:=range(hashes) {
+		if i==0 {
+			hash = v
+		} else {
+			hash = hash+";"+v
+		}
+	}
+	u, err := api.buildURLParams("/addrs/"+hash+"/balance", params)
+	resp, err := getResponse(c, u)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	//decode JSON into Addr
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&addr)
+	return
+}
+
 //GetAddrBal returns balance information for a given public
 //address. Fastest Address API call, but does not
 //include transaction details.
