@@ -77,7 +77,7 @@ type TX struct {
 type TXInput struct {
 	PrevHash    string   `json:"prev_hash,omitempty"`
 	OutputIndex int      `json:"output_index,omitempty"`
-	OutputValue int      `json:"output_value,omitempty"`
+	OutputValue int64    `json:"output_value,omitempty"`
 	Addresses   []string `json:"addresses"`
 	Sequence    int      `json:"sequence,omitempty"`
 	ScriptType  string   `json:"script_type,omitempty"`
@@ -89,7 +89,7 @@ type TXInput struct {
 //TXOutput represents the state of a transaction output
 type TXOutput struct {
 	SpentBy    string   `json:"spent_by,omitempty"`
-	Value      int      `json:"value"`
+	Value      int64    `json:"value"`
 	Addresses  []string `json:"addresses"`
 	ScriptType string   `json:"script_type,omitempty"`
 	Script     string   `json:"script,omitempty"`
@@ -114,7 +114,7 @@ type TXRef struct {
 	TXHash        string    `json:"tx_hash"`
 	TXInputN      int       `json:"tx_input_n"`
 	TXOutputN     int       `json:"tx_output_n"`
-	Value         int       `json:"value"`
+	Value         int64     `json:"value"`
 	Pref          string    `json:"preference"`
 	Spent         bool      `json:"spent"`
 	DoubleSpend   bool      `json:"double_spend"`
@@ -167,7 +167,7 @@ type MicroTX struct {
 	Priv       string   `json:"from_private,omitempty"`
 	Wif        string   `json:"from_wif,omitempty"`
 	ToAddr     string   `json:"to_address"`
-	Value      int      `json:"value_satoshis"`
+	Value      int64    `json:"value_satoshis"`
 	ChangeAddr string   `json:"change_address,omitempty"`
 	Wait       bool     `json:"wait_guarantee,omitempty"`
 	ToSign     []string `json:"tosign,omitempty"`
@@ -178,7 +178,7 @@ type MicroTX struct {
 		OutputIndex int    `json:"output_index"`
 	} `json:"inputs,omitempty"`
 	Outputs []struct {
-		Value   int    `json:"value"`
+		Value   int64  `json:"value"`
 		Address string `json:"address"`
 	} `json:"outputs,omitempty"`
 	Fees int `json:"fees,omitempty"`
@@ -278,7 +278,7 @@ type PayFwd struct {
 	InputAddr      string   `json:"input_address,omitempty"`
 	ProcessAddr    string   `json:"process_fees_address,omitempty"`
 	ProcessPercent float64  `json:"process_fees_percent,omitempty"`
-	ProcessValue   int      `json:"process_fees_satoshis,omitempty"`
+	ProcessValue   int64    `json:"process_fees_satoshis,omitempty"`
 	CallbackURL    string   `json:"callback_url,omitempty"`
 	EnableConfirm  bool     `json:"enable_confirmations,omitempty"`
 	MiningFees     int      `json:"mining_fees_satoshis,omitempty"`
@@ -288,7 +288,7 @@ type PayFwd struct {
 //Payback represents a Payment Forwarding Callback.
 //It's more fun to call it a "payback."
 type Payback struct {
-	Value       int    `json:"value"`
+	Value       int64  `json:"value"`
 	Destination string `json:"destination"`
 	DestHash    string `json:"transaction_hash"`
 	InputAddr   string `json:"input_address"`
@@ -318,11 +318,11 @@ type OAPTX struct {
 		PrevHash    string `json:"prev_hash"`
 		OutputIndex int    `json:"output_index"`
 		OAPAddress  string `json:"address"`
-		OutputValue int    `json:"output_value"`
+		OutputValue int64  `json:"output_value"`
 	} `json:"inputs"`
 	Outputs []struct {
 		OAPAddress      string `json:"address"`
-		Value           int    `json:"value"`
+		Value           int64  `json:"value"`
 		OrigOutputIndex int    `json:"original_output_index"`
 	} `json:"outputs"`
 }
