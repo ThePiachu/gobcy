@@ -28,6 +28,9 @@ func (api *API) GetMultiAddrBalCustom(c appengine.Context, hashes []string, omit
 		}
 	}
 	u, err := api.buildURLParams("/addrs/"+hash+"/balance", params)
+	if err != nil {
+		return
+	}
 	resp, err := getResponse(c, u)
 	if err != nil {
 		return
@@ -35,7 +38,19 @@ func (api *API) GetMultiAddrBalCustom(c appengine.Context, hashes []string, omit
 	defer resp.Body.Close()
 	//decode JSON into Addr
 	dec := json.NewDecoder(resp.Body)
-	err = dec.Decode(&addr)
+	if len(hashes) > 1 {
+		err = dec.Decode(&addr)
+		if err != nil {
+			return
+		}
+	} else {
+		var add Addr
+		err = dec.Decode(&add)
+		if err != nil {
+			return
+		}
+		addr = []Addr{add}
+	}
 	return
 }
 
