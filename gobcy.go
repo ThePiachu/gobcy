@@ -18,6 +18,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/ThePiachu/Go/Log"
 )
 
 const baseURL = "https://api.blockcypher.com/v1/"
@@ -65,7 +67,10 @@ func postResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *h
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
-		dec.Decode(&msg)
+		err = dec.Decode(&msg)
+		if err!=nil {
+			Log.Debugf(c, "postResponse - %v", err)
+		}
 		resp.Body.Close()
 		err = errors.New(resp.Status + ", Message: " + msg["error"])
 	}
@@ -87,7 +92,10 @@ func putResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *ht
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
-		dec.Decode(&msg)
+		err = dec.Decode(&msg)
+		if err!=nil {
+			Log.Debugf(c, "putResponse - %v", err)
+		}
 		resp.Body.Close()
 		err = errors.New(resp.Status + ", Message: " + msg["error"])
 	}
@@ -109,7 +117,10 @@ func deleteResponse(c appengine.Context, target *url.URL) (resp *http.Response, 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
-		dec.Decode(&msg)
+		err = dec.Decode(&msg)
+		if err!=nil {
+			Log.Debugf(c, "deleteResponse - %v", err)
+		}
 		resp.Body.Close()
 		err = errors.New(resp.Status + ", Message: " + msg["error"])
 	}
