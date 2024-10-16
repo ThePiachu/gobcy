@@ -20,6 +20,7 @@ import (
 	"strconv"
 
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/urlfetch"
 )
 
 const baseURL = "https://api.blockcypher.com/v1/"
@@ -40,7 +41,9 @@ type API struct {
 
 //getResponse is a boilerplate for HTTP GET responses.
 func getResponse(c context.Context, target *url.URL, decTarget interface{}) (err error) {
-	resp, err := http.Get(target.String())
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err := client.Get(target.String())
 	if err != nil {
 		return
 	}
@@ -61,7 +64,9 @@ func postResponse(c context.Context, target *url.URL, encTarget interface{}, dec
 	if err = enc.Encode(encTarget); err != nil {
 		return
 	}
-	resp, err := http.Post(target.String(), "application/json", &data)
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err := client.Post(target.String(), "application/json", &data)
 	if err != nil {
 		return
 	}
@@ -86,7 +91,9 @@ func putResponse(c context.Context, target *url.URL, encTarget interface{}) (err
 	if err != nil {
 		return
 	}
-	resp, err := http.DefaultClient.Do(req)
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}
@@ -103,7 +110,9 @@ func deleteResponse(c context.Context, target *url.URL) (err error) {
 	if err != nil {
 		return
 	}
-	resp, err := http.DefaultClient.Do(req)
+	tr := urlfetch.Transport{Context: c}
+	client := http.Client{Transport: &tr}
+	resp, err := client.Do(req)
 	if err != nil {
 		return
 	}

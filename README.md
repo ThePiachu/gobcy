@@ -1,6 +1,6 @@
 # gobcy
 
-A Go wrapper for the [BlockCypher](http://www.blockcypher.com/) API. Targeting support for Bitcoin (main and testnet3) and BlockCypher's internal testnet, but others (Litecoin, Dogecoin) should work too. The wrapper works also for some query for Ethereum but the compatibility is not fully guaranteed.
+A Google App Engine versuib if the Go wrapper for the [BlockCypher](http://www.blockcypher.com/) API. Targeting support for Bitcoin (main and testnet3) and BlockCypher's internal testnet, but others (Litecoin, Dogecoin) should work too. The wrapper works also for some query for Ethereum but the compatibility is not fully guaranteed.
 
 ## Configuration
 
