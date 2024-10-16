@@ -4,23 +4,25 @@ import (
 	"errors"
 	"net/url"
 	"strconv"
+
+	"golang.org/x/net/context"
 )
 
 //GetChain returns the current state of the
 //configured Coin/Chain.
-func (api *API) GetChain() (chain Blockchain, err error) {
+func (api *API) GetChain(c context.Context) (chain Blockchain, err error) {
 	u, err := api.buildURL("", nil)
 	if err != nil {
 		return
 	}
-	err = getResponse(u, &chain)
+	err = getResponse(c, u, &chain)
 	return
 }
 
 //GetBlock returns a Block based on either height
 //or hash. If both height and hash are sent, it will
 //throw an error.
-func (api *API) GetBlock(height int, hash string, params map[string]string) (block Block, err error) {
+func (api *API) GetBlock(c context.Context, height int, hash string, params map[string]string) (block Block, err error) {
 	var u *url.URL
 	ustr := "/blocks/"
 	if height != 0 && hash != "" {
@@ -35,14 +37,14 @@ func (api *API) GetBlock(height int, hash string, params map[string]string) (blo
 	if err != nil {
 		return
 	}
-	err = getResponse(u, &block)
+	err = getResponse(c, u, &block)
 	return
 }
 
 //GetBlockNextTXs returns the the next page of TXids based
 //on the NextTXs URL in this Block. If NextTXs is empty,
 //this will return an error.
-func (api *API) GetBlockNextTXs(this Block) (next Block, err error) {
+func (api *API) GetBlockNextTXs(c context.Context, this Block) (next Block, err error) {
 	if this.NextTXs == "" {
 		err = errors.New("Func GetNextTXs: This Block doesn't have more transactions")
 		return
@@ -60,6 +62,6 @@ func (api *API) GetBlockNextTXs(this Block) (next Block, err error) {
 	for k := range query {
 		params[k] = query.Get(k)
 	}
-	next, err = api.GetBlock(0, this.Hash, params)
+	next, err = api.GetBlock(c, 0, this.Hash, params)
 	return
 }

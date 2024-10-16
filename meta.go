@@ -3,6 +3,8 @@ package gobcy
 import (
 	"fmt"
 	"strconv"
+
+	"golang.org/x/net/context"
 )
 
 //GetMeta gets BlockCypher-stored metadata associated with
@@ -14,7 +16,7 @@ import (
 //If private is false, will retrieve publicly stored metadata.
 //If private is true, will retrieve privately stored metadata
 //associated with your token.
-func (api *API) GetMeta(hash string, kind string, private bool) (meta map[string]string, err error) {
+func (api *API) GetMeta(c context.Context, hash string, kind string, private bool) (meta map[string]string, err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = fmt.Errorf("Func GetMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind)
 		return
@@ -24,7 +26,7 @@ func (api *API) GetMeta(hash string, kind string, private bool) (meta map[string
 	if err != nil {
 		return
 	}
-	err = getResponse(u, &meta)
+	err = getResponse(c, u, &meta)
 	return
 }
 
@@ -37,7 +39,7 @@ func (api *API) GetMeta(hash string, kind string, private bool) (meta map[string
 //If private is false, will set publicly stored metadata.
 //If private is true, will set privately stored metadata
 //associated with your token.
-func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]string) (err error) {
+func (api *API) PutMeta(c context.Context, hash string, kind string, private bool, meta map[string]string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = fmt.Errorf("Func PutMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind)
 		return
@@ -47,7 +49,7 @@ func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]
 	if err != nil {
 		return
 	}
-	err = putResponse(u, &meta)
+	err = putResponse(c, u, &meta)
 	return
 }
 
@@ -58,7 +60,7 @@ func (api *API) PutMeta(hash string, kind string, private bool, meta map[string]
 //  "tx" (for a transaction)
 //  "block" (for a block)
 //Public metadata cannot be deleted; it is immutable.
-func (api *API) DeleteMeta(hash string, kind string) (err error) {
+func (api *API) DeleteMeta(c context.Context, hash string, kind string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = fmt.Errorf("Func DeleteMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind)
 		return
@@ -67,6 +69,6 @@ func (api *API) DeleteMeta(hash string, kind string) (err error) {
 	if err != nil {
 		return
 	}
-	err = deleteResponse(u)
+	err = deleteResponse(c, u)
 	return
 }

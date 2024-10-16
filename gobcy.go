@@ -18,6 +18,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"golang.org/x/net/context"
 )
 
 const baseURL = "https://api.blockcypher.com/v1/"
@@ -37,7 +39,7 @@ type API struct {
 }
 
 //getResponse is a boilerplate for HTTP GET responses.
-func getResponse(target *url.URL, decTarget interface{}) (err error) {
+func getResponse(c context.Context, target *url.URL, decTarget interface{}) (err error) {
 	resp, err := http.Get(target.String())
 	if err != nil {
 		return
@@ -53,7 +55,7 @@ func getResponse(target *url.URL, decTarget interface{}) (err error) {
 }
 
 //postResponse is a boilerplate for HTTP POST responses.
-func postResponse(target *url.URL, encTarget interface{}, decTarget interface{}) (err error) {
+func postResponse(c context.Context, target *url.URL, encTarget interface{}, decTarget interface{}) (err error) {
 	var data bytes.Buffer
 	enc := json.NewEncoder(&data)
 	if err = enc.Encode(encTarget); err != nil {
@@ -74,7 +76,7 @@ func postResponse(target *url.URL, encTarget interface{}, decTarget interface{})
 }
 
 //putResponse is a boilerplate for HTTP PUT responses.
-func putResponse(target *url.URL, encTarget interface{}) (err error) {
+func putResponse(c context.Context, target *url.URL, encTarget interface{}) (err error) {
 	var data bytes.Buffer
 	enc := json.NewEncoder(&data)
 	if err = enc.Encode(encTarget); err != nil {
@@ -96,7 +98,7 @@ func putResponse(target *url.URL, encTarget interface{}) (err error) {
 }
 
 //deleteResponse is a boilerplate for HTTP DELETE responses.
-func deleteResponse(target *url.URL) (err error) {
+func deleteResponse(c context.Context, target *url.URL) (err error) {
 	req, err := http.NewRequest("DELETE", target.String(), nil)
 	if err != nil {
 		return
@@ -169,11 +171,11 @@ func (api *API) buildURL(u string, params map[string]string) (target *url.URL, e
 }
 
 // CheckUsage checks token usage
-func (api *API) CheckUsage() (usage TokenUsage, err error) {
+func (api *API) CheckUsage(c context.Context) (usage TokenUsage, err error) {
 	u, err := url.Parse(baseURL + "tokens/" + api.Token)
 	if err != nil {
 		return
 	}
-	err = getResponse(u, &usage)
+	err = getResponse(c, u, &usage)
 	return
 }
