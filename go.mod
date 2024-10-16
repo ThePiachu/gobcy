@@ -1,4 +1,4 @@
-module github.com/blockcypher/gobcy/v2
+module github.com/ThePiachu/gobcy/v2
 
 go 1.22.8
 

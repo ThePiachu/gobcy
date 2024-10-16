@@ -7,7 +7,7 @@ A Google App Engine versuib if the Go wrapper for the [BlockCypher](http://www.b
 Import the package like so:
 
 ```go
-import "github.com/blockcypher/gobcy/v2"
+import "github.com/ThePiachu/gobcy/v2"
 ```
 
 Then initiate an API struct with your credentials:
