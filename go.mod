@@ -1,6 +1,6 @@
 module github.com/blockcypher/gobcy/v2
 
-go 1.18
+go 1.22.8
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2

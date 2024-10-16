@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/net/context"
+	"google.golang.org/appengine/v2/aetest"
 )
 
 var keys1, keys2 AddrKeychain
@@ -18,14 +18,17 @@ var txhash1, txhash2 string
 var bcy API
 
 func TestMain(m *testing.M) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	//Set Coin/Chain to BlockCypher testnet
 	bcy.Coin = "bcy"
 	bcy.Chain = "test"
 	//Set Your Token
 	bcy.Token = "$TOKEN"
 	//Create/fund the test addresses
-	var err error
 	keys1, err = bcy.GenAddrKeychain(c)
 	if err != nil {
 		log.Fatal("Error generating test addresses: ", err)
@@ -48,7 +51,11 @@ func TestMain(m *testing.M) {
 //TestsGetTXConf runs first, to test
 //Confidence factor
 func TestGetTXConf(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	conf, err := bcy.GetTXConf(c, txhash2)
 	if err != nil {
 		t.Error("Error encountered: ", err)
@@ -57,7 +64,11 @@ func TestGetTXConf(t *testing.T) {
 }
 
 func TestUsage(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	usage, err := bcy.CheckUsage(c)
 	if err != nil {
 		t.Error("Error encountered: ", err)
@@ -66,7 +77,11 @@ func TestUsage(t *testing.T) {
 }
 
 func TestBlockchain(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	ch, err := bcy.GetChain(c)
 	if err != nil {
 		t.Error("GetChain error encountered: ", err)
@@ -99,7 +114,11 @@ func TestBlockchain(t *testing.T) {
 }
 
 func TestAddress(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	addr, err := bcy.GetAddrBal(c, keys1.Address, nil)
 	if err != nil {
 		t.Error("GetAddrBal error encountered: ", err)
@@ -118,7 +137,11 @@ func TestAddress(t *testing.T) {
 }
 
 func TestGenAddrMultisig(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	pubkeys := []string{
 		"02c716d071a76cbf0d29c29cacfec76e0ef8116b37389fb7a3e76d6d32cf59f4d3",
 		"033ef4d5165637d99b673bcdbb7ead359cee6afd7aaf78d3da9d2392ee4102c8ea",
@@ -135,7 +158,11 @@ func TestGenAddrMultisig(t *testing.T) {
 }
 
 func TestWallet(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	wal, err := bcy.CreateWallet(c, Wallet{Name: "testwallet",
 		Addresses: []string{keys1.Address}})
 	if err != nil {
@@ -175,7 +202,11 @@ func TestWallet(t *testing.T) {
 }
 
 func TestHDWallet(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	wal, err := bcy.CreateHDWallet(c, HDWallet{Name: "testhdwallet",
 		ExtPubKey: "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"})
 	if err != nil {
@@ -210,7 +241,11 @@ func TestHDWallet(t *testing.T) {
 }
 
 func TestTX(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	txs, err := bcy.GetUnTX(c)
 	if err != nil {
 		t.Error("GetUnTX error encountered: ", err)
@@ -242,7 +277,11 @@ func TestTX(t *testing.T) {
 }
 
 func TestHook(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	hook, err := bcy.CreateHook(c, Hook{Event: "new-block", URL: "https://my.domain.com/api/callbacks/doublespend?secret=justbetweenus"})
 	if err != nil {
 		t.Error("PostHook error encountered: ", err)
@@ -260,7 +299,11 @@ func TestHook(t *testing.T) {
 }
 
 func TestPayFwd(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	pay, err := bcy.CreatePayFwd(c, PayFwd{Destination: keys1.Address})
 	if err != nil {
 		t.Error("CreatePayFwd error encountered: ", err)
@@ -283,8 +326,12 @@ func TestPayFwd(t *testing.T) {
 }
 
 func TestMeta(t *testing.T) {
-	c:=context.Background()
-	err := bcy.PutMeta(c, keys1.Address, "addr", true, map[string]string{"key": "value"})
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
+	err = bcy.PutMeta(c, keys1.Address, "addr", true, map[string]string{"key": "value"})
 	if err != nil {
 		t.Error("PutMeta error encountered: ", err)
 	}
@@ -302,7 +349,11 @@ func TestMeta(t *testing.T) {
 }
 
 func TestAsset(t *testing.T) {
-	c:=context.Background()
+	c, done, err := aetest.NewContext()
+	if err != nil {
+		panic(err)
+	}
+	defer done()
 	oap1, err := bcy.GenAssetKeychain(c)
 	if err != nil {
 		t.Error("GenAssetKeychain error encountered: ", err)
