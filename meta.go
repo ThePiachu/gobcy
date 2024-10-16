@@ -1,11 +1,11 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/net/context"
 	"strconv"
 )
 
@@ -18,7 +18,7 @@ import (
 //If private is false, will retrieve publicly stored metadata.
 //If private is true, will retrieve privately stored metadata
 //associated with your token.
-func (api *API) GetMeta(c appengine.Context, hash string, kind string, private bool) (meta map[string]string, err error) {
+func (api *API) GetMeta(c context.Context, hash string, kind string, private bool) (meta map[string]string, err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func GetMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return
@@ -45,7 +45,7 @@ func (api *API) GetMeta(c appengine.Context, hash string, kind string, private b
 //If private is false, will set publicly stored metadata.
 //If private is true, will set privately stored metadata
 //associated with your token.
-func (api *API) PutMeta(c appengine.Context, hash string, kind string, private bool, meta map[string]string) (err error) {
+func (api *API) PutMeta(c context.Context, hash string, kind string, private bool, meta map[string]string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func PutMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return
@@ -75,7 +75,7 @@ func (api *API) PutMeta(c appengine.Context, hash string, kind string, private b
 //  "tx" (for a transaction)
 //  "block" (for a block)
 //Public metadata cannot be deleted; it is immutable.
-func (api *API) DeleteMeta(c appengine.Context, hash string, kind string) (err error) {
+func (api *API) DeleteMeta(c context.Context, hash string, kind string) (err error) {
 	if kind != "addr" && kind != "tx" && kind != "block" {
 		err = errors.New(fmt.Sprintf("Func DeleteMeta: kind an invalid type: '%v'. Needs to be 'addr', 'tx', or 'block'", kind))
 		return

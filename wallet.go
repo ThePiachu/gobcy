@@ -1,10 +1,10 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
 	"strconv"
 	"strings"
 )
@@ -15,7 +15,7 @@ import (
 //the wallet name instead). For example, with checking
 //a wallet name balance:
 //  addr, err := api.GetAddrBal("your-wallet-name")
-func (api *API) CreateWallet(c appengine.Context, req Wallet) (wal Wallet, err error) {
+func (api *API) CreateWallet(c context.Context, req Wallet) (wal Wallet, err error) {
 	u, err := api.buildURL("/wallets")
 	if err != nil {
 		return
@@ -37,7 +37,7 @@ func (api *API) CreateWallet(c appengine.Context, req Wallet) (wal Wallet, err e
 
 //ListWallets lists all known Wallets associated with
 //this token/coin/chain.
-func (api *API) ListWallets(c appengine.Context) (names []string, err error) {
+func (api *API) ListWallets(c context.Context) (names []string, err error) {
 	u, err := api.buildURL("/wallets")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -56,7 +56,7 @@ func (api *API) ListWallets(c appengine.Context) (names []string, err error) {
 //GetWallet gets a Wallet based on its name, the associated
 //API token/coin/chain, and whether it's an HD wallet or
 //not.
-func (api *API) GetWallet(c appengine.Context, name string) (wal Wallet, err error) {
+func (api *API) GetWallet(c context.Context, name string) (wal Wallet, err error) {
 	u, err := api.buildURL("/wallets/" + name)
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -74,7 +74,7 @@ func (api *API) GetWallet(c appengine.Context, name string) (wal Wallet, err err
 //list of addresses to add, takes one additional parameter:
 //  "omitAddr," if true will omit wallet addresses in your
 //  response. Useful to speed up the API call for larger wallets.
-func (api *API) AddAddrWallet(c appengine.Context, name string, addrs []string, omitAddr bool) (wal Wallet, err error) {
+func (api *API) AddAddrWallet(c context.Context, name string, addrs []string, omitAddr bool) (wal Wallet, err error) {
 	params := map[string]string{"omitWalletAddresses": strconv.FormatBool(omitAddr)}
 	u, err := api.buildURLParams("/wallets/"+name+"/addresses", params)
 	if err != nil {
@@ -104,7 +104,7 @@ func (api *API) AddAddrWallet(c appengine.Context, name string, addrs []string, 
 //  "nonzero", if true will return only nonzero balance addresses
 //"used" and "unused" cannot be true at the same time; the SDK will throw an error.
 //"zero" and "nonzero" cannot be true at the same time; the SDK will throw an error.
-func (api *API) GetAddrWallet(c appengine.Context, name string, used bool, unused bool, zero bool, nonzero bool) (addrs []string, err error) {
+func (api *API) GetAddrWallet(c context.Context, name string, used bool, unused bool, zero bool, nonzero bool) (addrs []string, err error) {
 	params := make(map[string]string)
 	if used && unused {
 		err = errors.New("GetAddrWallet: Unused and used cannot be the same")
@@ -136,7 +136,7 @@ func (api *API) GetAddrWallet(c appengine.Context, name string, used bool, unuse
 
 //DeleteAddrWallet deletes a slice of addresses associated with
 //a named Wallet, associated with the API token/coin/chain.
-func (api *API) DeleteAddrWallet(c appengine.Context, name string, addrs []string) (err error) {
+func (api *API) DeleteAddrWallet(c context.Context, name string, addrs []string) (err error) {
 	u, err := api.buildURLParams("/wallets/"+name+"/addresses",
 		map[string]string{"address": strings.Join(addrs, ";")})
 	resp, err := deleteResponse(c, u)
@@ -150,7 +150,7 @@ func (api *API) DeleteAddrWallet(c appengine.Context, name string, addrs []strin
 //GenAddrWallet generates a new address within the named Wallet,
 //associated with the API token/coin/chain. Also returns the
 //private/WIF/public key of address via an Address Keychain.
-func (api *API) GenAddrWallet(c appengine.Context, name string) (wal Wallet, addr AddrKeychain, err error) {
+func (api *API) GenAddrWallet(c context.Context, name string) (wal Wallet, addr AddrKeychain, err error) {
 	u, err := api.buildURL("/wallets/" + name + "/addresses/generate")
 	resp, err := postResponse(c, u, nil)
 	if err != nil {
@@ -169,7 +169,7 @@ func (api *API) GenAddrWallet(c appengine.Context, name string) (wal Wallet, add
 
 //DeleteWallet deletes a named wallet associated with the
 //API token/coin/chain.
-func (api *API) DeleteWallet(c appengine.Context, name string) (err error) {
+func (api *API) DeleteWallet(c context.Context, name string) (err error) {
 	u, err := api.buildURL("/wallets/" + name)
 	resp, err := deleteResponse(c, u)
 	if err != nil {

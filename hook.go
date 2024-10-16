@@ -1,15 +1,15 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/json"
+	"golang.org/x/net/context"
 )
 
 //CreateHook creates a new WebHook associated
 //with your API.Token, and returns a WebHook
 //with a BlockCypher-assigned id.
-func (api *API) CreateHook(c appengine.Context, hook Hook) (result Hook, err error) {
+func (api *API) CreateHook(c context.Context, hook Hook) (result Hook, err error) {
 	u, err := api.buildURL("/hooks")
 	if err != nil {
 		return
@@ -31,7 +31,7 @@ func (api *API) CreateHook(c appengine.Context, hook Hook) (result Hook, err err
 
 //ListHooks returns a slice of WebHooks
 //associated with your API.Token.
-func (api *API) ListHooks(c appengine.Context) (hooks []Hook, err error) {
+func (api *API) ListHooks(c context.Context) (hooks []Hook, err error) {
 	u, err := api.buildURL("/hooks")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -45,7 +45,7 @@ func (api *API) ListHooks(c appengine.Context) (hooks []Hook, err error) {
 }
 
 //GetHook returns a WebHook by its id.
-func (api *API) GetHook(c appengine.Context, id string) (hook Hook, err error) {
+func (api *API) GetHook(c context.Context, id string) (hook Hook, err error) {
 	u, err := api.buildURL("/hooks/" + id)
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -60,7 +60,7 @@ func (api *API) GetHook(c appengine.Context, id string) (hook Hook, err error) {
 
 //DeleteHook deletes a WebHook notification
 //from BlockCypher's database, based on its id.
-func (api *API) DeleteHook(c appengine.Context, id string) (err error) {
+func (api *API) DeleteHook(c context.Context, id string) (err error) {
 	u, err := api.buildURL("/hooks/" + id)
 	resp, err := deleteResponse(c, u)
 	if err != nil {

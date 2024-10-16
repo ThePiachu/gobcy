@@ -1,16 +1,16 @@
 package gobcy
 
 import (
-	"appengine"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
 	"net/url"
 	"strconv"
 )
 
 //GetChain returns the current state of the
 //configured Coin/Chain.
-func (api *API) GetChain(c appengine.Context) (chain Blockchain, err error) {
+func (api *API) GetChain(c context.Context) (chain Blockchain, err error) {
 	u, err := api.buildURL("")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -26,7 +26,7 @@ func (api *API) GetChain(c appengine.Context) (chain Blockchain, err error) {
 //GetBlock returns a Block based on either height
 //or hash. If both height and hash are sent, it will
 //throw an error.
-func (api *API) GetBlock(c appengine.Context, height int, hash string) (block Block, err error) {
+func (api *API) GetBlock(c context.Context, height int, hash string) (block Block, err error) {
 	block, err = api.GetBlockPage(c, height, hash, 0, 0)
 	return
 }
@@ -34,7 +34,7 @@ func (api *API) GetBlock(c appengine.Context, height int, hash string) (block Bl
 //GetBlockNextTXs returns the the next page of TXids based
 //on the NextTXs URL in this Block. If NextTXs is empty,
 //this will return an error.
-func (api *API) GetBlockNextTXs(c appengine.Context, this Block) (next Block, err error) {
+func (api *API) GetBlockNextTXs(c context.Context, this Block) (next Block, err error) {
 	if this.NextTXs == "" {
 		err = errors.New("Func GetNextTXs: This Block doesn't have more transactions")
 		return
@@ -61,7 +61,7 @@ func (api *API) GetBlockNextTXs(c appengine.Context, this Block) (next Block, er
 //or hash, and includes custom variables for txstart/limit of txs.
 //If both height and hash are sent, it will throw an error. If txstart/limit = 0,
 //it will use the API-defaults for both.
-func (api *API) GetBlockPage(c appengine.Context, height int, hash string, txstart int, limit int) (block Block, err error) {
+func (api *API) GetBlockPage(c context.Context, height int, hash string, txstart int, limit int) (block Block, err error) {
 	var u *url.URL
 	ustr := "/blocks/"
 	if height != 0 && hash != "" {

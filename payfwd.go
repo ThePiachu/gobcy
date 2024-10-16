@@ -1,15 +1,15 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/json"
+	"golang.org/x/net/context"
 )
 
 //CreatePayFwd creates a new PayFwd forwarding
 //request associated with your API.Token, and
 //returns a PayFwd with a BlockCypher-assigned id.
-func (api *API) CreatePayFwd(c appengine.Context, payment PayFwd) (result PayFwd, err error) {
+func (api *API) CreatePayFwd(c context.Context, payment PayFwd) (result PayFwd, err error) {
 	u, err := api.buildURL("/payments")
 	if err != nil {
 		return
@@ -31,7 +31,7 @@ func (api *API) CreatePayFwd(c appengine.Context, payment PayFwd) (result PayFwd
 
 //ListPayFwds returns a PayFwds slice
 //associated with your API.Token.
-func (api *API) ListPayFwds(c appengine.Context) (payments []PayFwd, err error) {
+func (api *API) ListPayFwds(c context.Context) (payments []PayFwd, err error) {
 	u, err := api.buildURL("/payments")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -45,7 +45,7 @@ func (api *API) ListPayFwds(c appengine.Context) (payments []PayFwd, err error) 
 }
 
 //GetPayFwd returns a PayFwd based on its id.
-func (api *API) GetPayFwd(c appengine.Context, id string) (payment PayFwd, err error) {
+func (api *API) GetPayFwd(c context.Context, id string) (payment PayFwd, err error) {
 	u, err := api.buildURL("/payments/" + id)
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -60,7 +60,7 @@ func (api *API) GetPayFwd(c appengine.Context, id string) (payment PayFwd, err e
 
 //DeletePayFwd deletes a PayFwd request from
 //BlockCypher's database, based on its id.
-func (api *API) DeletePayFwd(c appengine.Context, id string) (err error) {
+func (api *API) DeletePayFwd(c context.Context, id string) (err error) {
 	u, err := api.buildURL("/payments/" + id)
 	resp, err := deleteResponse(c, u)
 	if err != nil {

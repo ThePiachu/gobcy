@@ -1,10 +1,10 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
 	"strconv"
 )
 
@@ -14,7 +14,7 @@ import (
 //the wallet name instead). For example, with checking
 //a wallet name balance:
 //  addr, err := api.GetAddrBal("your-hd-wallet-name")
-func (api *API) CreateHDWallet(c appengine.Context, req HDWallet) (wal HDWallet, err error) {
+func (api *API) CreateHDWallet(c context.Context, req HDWallet) (wal HDWallet, err error) {
 	u, err := api.buildURL("/wallets/hd")
 	if err != nil {
 		return
@@ -36,7 +36,7 @@ func (api *API) CreateHDWallet(c appengine.Context, req HDWallet) (wal HDWallet,
 
 //ListHDWallets lists all known HDWallets associated with
 //this token/coin/chain.
-func (api *API) ListHDWallets(c appengine.Context) (names []string, err error) {
+func (api *API) ListHDWallets(c context.Context) (names []string, err error) {
 	u, err := api.buildURL("/wallets/hd")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -54,7 +54,7 @@ func (api *API) ListHDWallets(c appengine.Context) (names []string, err error) {
 
 //GetHDWallet gets a HDWallet based on its name
 //and the associated API token/coin/chain.
-func (api *API) GetHDWallet(c appengine.Context, name string) (wal HDWallet, err error) {
+func (api *API) GetHDWallet(c context.Context, name string) (wal HDWallet, err error) {
 	u, err := api.buildURL("/wallets/hd/" + name)
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -76,7 +76,7 @@ func (api *API) GetHDWallet(c appengine.Context, name string) (wal HDWallet, err
 //  "nonzero", if true will return only nonzero balance addresses
 //"used" and "unused" cannot be true at the same time; the SDK will throw an error.
 //"zero" and "nonzero" cannot be true at the same time; the SDK will throw an error.
-func (api *API) GetAddrHDWallet(c appengine.Context, name string, used bool, unused bool, zero bool, nonzero bool) (addrs HDWallet, err error) {
+func (api *API) GetAddrHDWallet(c context.Context, name string, used bool, unused bool, zero bool, nonzero bool) (addrs HDWallet, err error) {
 	params := make(map[string]string)
 	if used && unused {
 		err = errors.New("GetAddrHDWallet: Unused and used cannot be the same")
@@ -112,7 +112,7 @@ func (api *API) GetAddrHDWallet(c appengine.Context, name string, used bool, unu
 //    if false, address will be generated on the first chain in the HDWallet.
 // "subchainIndex," Derives address(es) on this specific subchain. Only used
 //    if isSubchain is true.
-func (api *API) DeriveAddrHDWallet(c appengine.Context, name string, count int, isSub bool, subchainIndex int) (wal HDWallet, err error) {
+func (api *API) DeriveAddrHDWallet(c context.Context, name string, count int, isSub bool, subchainIndex int) (wal HDWallet, err error) {
 	params := map[string]string{"count": strconv.Itoa(count)}
 	if isSub {
 		params["subchain_index"] = strconv.Itoa(subchainIndex)
@@ -131,7 +131,7 @@ func (api *API) DeriveAddrHDWallet(c appengine.Context, name string, count int, 
 
 //DeleteHDWallet deletes a named HDWallet associated with the
 //API token/coin/chain.
-func (api *API) DeleteHDWallet(c appengine.Context, name string) (err error) {
+func (api *API) DeleteHDWallet(c context.Context, name string) (err error) {
 	u, err := api.buildURL("/wallets/hd/" + name)
 	resp, err := deleteResponse(c, u)
 	if err != nil {

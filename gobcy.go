@@ -11,10 +11,10 @@
 package gobcy
 
 import (
-	"appengine"
-	"appengine/urlfetch"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine/urlfetch"
 	"io"
 	"net/http"
 	"net/url"
@@ -39,9 +39,10 @@ type API struct {
 }
 
 //getResponse is a boilerplate for HTTP GET responses.
-func getResponse(c appengine.Context, target *url.URL) (resp *http.Response, err error) {
+func getResponse(c context.Context, target *url.URL) (resp *http.Response, err error) {
 	tr := urlfetch.Transport{Context: c}
 	client := http.Client{Transport: &tr}
+	Log.Debugf(c, "Getting %v", target.String())
 	resp, err = client.Get(target.String())
 	if err != nil {
 		return
@@ -57,9 +58,10 @@ func getResponse(c appengine.Context, target *url.URL) (resp *http.Response, err
 }
 
 //postResponse is a boilerplate for HTTP POST responses.
-func postResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
+func postResponse(c context.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
 	tr := urlfetch.Transport{Context: c}
 	client := http.Client{Transport: &tr}
+	Log.Debugf(c, "Posting %v", target.String())
 	resp, err = client.Post(target.String(), "application/json", data)
 	if err != nil {
 		return
@@ -68,7 +70,7 @@ func postResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *h
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
 		err = dec.Decode(&msg)
-		if err!=nil {
+		if err != nil {
 			Log.Debugf(c, "postResponse - %v", err)
 		}
 		resp.Body.Close()
@@ -78,13 +80,14 @@ func postResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *h
 }
 
 //putResponse is a boilerplate for HTTP PUT responses.
-func putResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
+func putResponse(c context.Context, target *url.URL, data io.Reader) (resp *http.Response, err error) {
 	req, err := http.NewRequest("PUT", target.String(), data)
 	if err != nil {
 		return
 	}
 	tr := urlfetch.Transport{Context: c}
 	client := http.Client{Transport: &tr}
+	Log.Debugf(c, "Putting %v", target.String())
 	resp, err = client.Do(req)
 	if err != nil {
 		return
@@ -93,7 +96,7 @@ func putResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *ht
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
 		err = dec.Decode(&msg)
-		if err!=nil {
+		if err != nil {
 			Log.Debugf(c, "putResponse - %v", err)
 		}
 		resp.Body.Close()
@@ -103,13 +106,14 @@ func putResponse(c appengine.Context, target *url.URL, data io.Reader) (resp *ht
 }
 
 //deleteResponse is a boilerplate for HTTP DELETE responses.
-func deleteResponse(c appengine.Context, target *url.URL) (resp *http.Response, err error) {
+func deleteResponse(c context.Context, target *url.URL) (resp *http.Response, err error) {
 	req, err := http.NewRequest("DELETE", target.String(), nil)
 	if err != nil {
 		return
 	}
 	tr := urlfetch.Transport{Context: c}
 	client := http.Client{Transport: &tr}
+	Log.Debugf(c, "Deleting %v", target.String())
 	resp, err = client.Do(req)
 	if err != nil {
 		return
@@ -118,7 +122,7 @@ func deleteResponse(c appengine.Context, target *url.URL) (resp *http.Response, 
 		msg := make(map[string]string)
 		dec := json.NewDecoder(resp.Body)
 		err = dec.Decode(&msg)
-		if err!=nil {
+		if err != nil {
 			Log.Debugf(c, "deleteResponse - %v", err)
 		}
 		resp.Body.Close()

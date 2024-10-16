@@ -1,18 +1,18 @@
 package gobcy
 
 import (
-	"appengine"
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
 	"strconv"
 
 	"github.com/btcsuite/btcd/btcec"
 )
 
 //GetUnTX returns an array of the latest unconfirmed TXs.
-func (api *API) GetUnTX(c appengine.Context) (txs []TX, err error) {
+func (api *API) GetUnTX(c context.Context) (txs []TX, err error) {
 	u, err := api.buildURL("/txs")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -26,7 +26,7 @@ func (api *API) GetUnTX(c appengine.Context) (txs []TX, err error) {
 }
 
 //GetTX returns a TX represented by the passed hash.
-func (api *API) GetTX(c appengine.Context, hash string) (tx TX, err error) {
+func (api *API) GetTX(c context.Context, hash string) (tx TX, err error) {
 	u, err := api.buildURL("/txs/" + hash)
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -50,7 +50,7 @@ func (api *API) GetTX(c appengine.Context, hash string) (tx TX, err error) {
 //	"includeHex", if true, includes raw-encoded hex transaction.
 //	"includeConfidence," if true, includes confidence information
 //	for unconfirmed transactions.
-func (api *API) GetTXCustom(c appengine.Context, hash string, limit int, instart int, outstart int, includeHex bool, includeConfidence bool) (tx TX, err error) {
+func (api *API) GetTXCustom(c context.Context, hash string, limit int, instart int, outstart int, includeHex bool, includeConfidence bool) (tx TX, err error) {
 	params := map[string]string{"includeHex": strconv.FormatBool(includeHex), "includeConfidence": strconv.FormatBool(includeConfidence)}
 	if limit > 0 {
 		params["limit"] = strconv.Itoa(limit)
@@ -77,7 +77,7 @@ func (api *API) GetTXCustom(c appengine.Context, hash string, limit int, instart
 //represents BlockCypher's confidence that an unconfirmed transaction
 //won't be successfully double-spent against. If the confidence is 1,
 //the transaction has already been confirmed.
-func (api *API) GetTXConf(c appengine.Context, hash string) (conf TXConf, err error) {
+func (api *API) GetTXConf(c context.Context, hash string) (conf TXConf, err error) {
 	u, err := api.buildURL("/txs/" + hash + "/confidence")
 	resp, err := getResponse(c, u)
 	if err != nil {
@@ -92,7 +92,7 @@ func (api *API) GetTXConf(c appengine.Context, hash string) (conf TXConf, err er
 
 //TempNewTX creates a simple template transaction, suitable for
 //use in NewTX. Takes an input/output address and amount.
-func TempNewTX(c appengine.Context, inAddr string, outAddr string, amount int64) (trans TX) {
+func TempNewTX(c context.Context, inAddr string, outAddr string, amount int64) (trans TX) {
 	trans.Inputs = make([]TXInput, 1)
 	trans.Outputs = make([]TXOutput, 1)
 	trans.Inputs[0].Addresses = make([]string, 1)
@@ -110,7 +110,7 @@ func TempNewTX(c appengine.Context, inAddr string, outAddr string, amount int64)
 //send from a multisig address (/series of public keys).
 //n represents the number of valid signatures required, and m
 //is derived from the number of pubkeys.
-func TempMultiTX(c appengine.Context, inAddr string, outAddr string, amount int64, n int, pubkeys []string) (trans TX, err error) {
+func TempMultiTX(c context.Context, inAddr string, outAddr string, amount int64, n int, pubkeys []string) (trans TX, err error) {
 	m := len(pubkeys)
 	if inAddr != "" && outAddr != "" {
 		err = errors.New("TempMultiTX: Can't have both inAddr and outAddr != \"\"")
@@ -145,7 +145,7 @@ func TempMultiTX(c appengine.Context, inAddr string, outAddr string, amount int6
 //http://dev.blockcypher.com/#customizing-transaction-requests
 //If verify is true, will include "ToSignTX," which can be used
 //to locally verify the "ToSign" data is valid.
-func (api *API) NewTX(c appengine.Context, trans TX, verify bool) (skel TXSkel, err error) {
+func (api *API) NewTX(c context.Context, trans TX, verify bool) (skel TXSkel, err error) {
 	u, err := api.buildURLParams("/txs/new",
 		map[string]string{"includeToSignTx": strconv.FormatBool(verify)})
 	if err != nil {
@@ -171,7 +171,7 @@ func (api *API) NewTX(c appengine.Context, trans TX, verify bool) (skel TXSkel, 
 //TXSkel, generating the proper Signatures and PubKeys
 //array, both hex-encoded. This is meant as a helper
 //function, and leverages btcd's btcec library.
-func (skel *TXSkel) Sign(c appengine.Context, priv []string) (err error) {
+func (skel *TXSkel) Sign(c context.Context, priv []string) (err error) {
 	//num of private keys must match len(ToSign)
 	//Often this might mean repeating private keys
 	if len(priv) != len(skel.ToSign) {
@@ -201,7 +201,7 @@ func (skel *TXSkel) Sign(c appengine.Context, priv []string) (err error) {
 //network. TXSkel requires a fully formed TX, Signatures,
 //and PubKeys. PubKeys should not be included in the
 //special case of multi-sig addresses.
-func (api *API) SendTX(c appengine.Context, skel TXSkel) (trans TXSkel, err error) {
+func (api *API) SendTX(c context.Context, skel TXSkel) (trans TXSkel, err error) {
 	u, err := api.buildURL("/txs/send")
 	if err != nil {
 		return
@@ -223,7 +223,7 @@ func (api *API) SendTX(c appengine.Context, skel TXSkel) (trans TXSkel, err erro
 
 //PushTX takes a hex-encoded transaction string
 //and pushes it directly to the Coin/Chain network.
-func (api *API) PushTX(c appengine.Context, hex string) (trans TXSkel, err error) {
+func (api *API) PushTX(c context.Context, hex string) (trans TXSkel, err error) {
 	u, err := api.buildURL("/txs/push")
 	if err != nil {
 		return
@@ -246,7 +246,7 @@ func (api *API) PushTX(c appengine.Context, hex string) (trans TXSkel, err error
 //DecodeTX takes a hex-encoded transaction string
 //and decodes it into a TX object, without sending
 //it along to the Coin/Chain network.
-func (api *API) DecodeTX(c appengine.Context, hex string) (trans TXSkel, err error) {
+func (api *API) DecodeTX(c context.Context, hex string) (trans TXSkel, err error) {
 	u, err := api.buildURL("/txs/decode")
 	if err != nil {
 		return
