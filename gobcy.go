@@ -20,7 +20,7 @@ import (
 	"strconv"
 
 	"golang.org/x/net/context"
-	"google.golang.org/appengine/urlfetch"
+	"google.golang.org/appengine/v2/urlfetch"
 )
 
 const baseURL = "https://api.blockcypher.com/v1/"
