@@ -19,6 +19,45 @@ func (api *API) GetAddrBal(c context.Context, hash string, params map[string]str
 	return
 }
 
+
+func (api *API) GetMultiAddrBal(c context.Context, hashes []string) (addr []Addr, err error) {
+	addr, err = api.GetMultiAddrBalCustom(c, hashes, false)
+	return
+}
+
+func (api *API) GetMultiAddrBalCustom(c context.Context, hashes []string, omitWalletAddr bool) (addr []Addr, err error) {
+	if len(hashes) == 0 {
+		return
+	}
+	params := map[string]string{"omitWalletAddresses": strconv.FormatBool(omitWalletAddr)}
+	hash := ""
+	for i, v := range hashes {
+		if i == 0 {
+			hash = v
+		} else {
+			hash = hash + ";" + v
+		}
+	}
+	u, err := api.buildURLParams("/addrs/"+hash+"/balance", params)
+	if err != nil {
+		return
+	}
+	if len(hashes) > 1 {
+		err := getResponse(c, u, &addr)
+		if err != nil {
+			return
+		}
+	} else {
+		var add Addr
+		err := getResponse(c, u, &add)
+		if err != nil {
+			return
+		}
+		addr = []Addr{add}
+	}
+	return
+}
+
 //GetAddr returns information for a given public
 //address, including a slice of confirmed and unconfirmed
 //transaction outpus via the TXRef arrays in the Address
