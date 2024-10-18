@@ -38,18 +38,18 @@ func (api *API) GetMultiAddrBalCustom(c context.Context, hashes []string, omitWa
 			hash = hash + ";" + v
 		}
 	}
-	u, err := api.buildURLParams("/addrs/"+hash+"/balance", params)
+	u, err := api.buildURL("/addrs/"+hash+"/balance", params)
 	if err != nil {
 		return
 	}
 	if len(hashes) > 1 {
-		err := getResponse(c, u, &addr)
+		err = getResponse(c, u, &addr)
 		if err != nil {
 			return
 		}
 	} else {
 		var add Addr
-		err := getResponse(c, u, &add)
+		err = getResponse(c, u, &add)
 		if err != nil {
 			return
 		}
